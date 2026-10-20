@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Add-Type -AssemblyName System.IO.Compression.FileSystem; $jar = \"$env:USERPROFILE\\\\.m2\\\\repository\\\\org\\\\springdoc\\\\springdoc-openapi-starter-common\\\\3.0.0\\\\springdoc-openapi-starter-common-3.0.0.jar\"; $zip = [System.IO.Compression.ZipFile]::OpenRead\\($jar\\); $entry = $zip.GetEntry\\(\"org/springdoc/core/configuration/SpringDocHateoasConfiguration.class\"\\); $ms = New-Object System.IO.MemoryStream; $entry.Open\\(\\).CopyTo\\($ms\\); $zip.Dispose\\(\\); $bytes = $ms.ToArray\\(\\); $sb = New-Object System.Text.StringBuilder; $run = 0; $start = 0; for \\($i = 0; $i -lt $bytes.Length; $i++\\) { $b = $bytes[$i]; if \\($b -ge 32 -and $b -le 126\\) { if \\($run -eq 0\\) { $start = $i }; $run++ } else { if \\($run -ge 8\\) { $s = [System.Text.Encoding]::ASCII.GetString\\($bytes, $start, $run\\); $null = $sb.AppendLine\\($s\\) }; $run = 0 } }; $sb.ToString\\(\\) -split \"`n\" | Where-Object { $_ -match \"enable|[Pp]ropert|[Cc]ondition|hateoas|Hateoas|spring\\\\.\" })",
+      "PowerShell(Get-NetTCPConnection *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8081/swagger-ui.html)",
+      "PowerShell($ui = \\(Invoke-WebRequest -Uri \"http://localhost:8081/swagger-ui.html\" -UseBasicParsing -MaximumRedirection 5 -ErrorAction SilentlyContinue\\); Write-Host \"swagger-ui.html -> $\\($ui.StatusCode\\)\"; $docs = \\(Invoke-WebRequest -Uri \"http://localhost:8081/api-docs\" -UseBasicParsing -ErrorAction SilentlyContinue\\); Write-Host \"api-docs -> $\\($docs.StatusCode\\)\"; $v3 = \\(Invoke-WebRequest -Uri \"http://localhost:8081/v3/api-docs\" -UseBasicParsing -ErrorAction SilentlyContinue\\); Write-Host \"v3/api-docs -> $\\($v3.StatusCode\\)\")"
+    ]
+  }
+}

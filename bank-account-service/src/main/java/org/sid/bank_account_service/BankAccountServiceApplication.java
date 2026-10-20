@@ -11,7 +11,6 @@ import org.springframework.context.annotation.Bean;
 import java.util.Date;
 import java.util.UUID;
 
-import static org.springframework.data.util.TypeUtils.type;
 
 @SpringBootApplication
 public class BankAccountServiceApplication {

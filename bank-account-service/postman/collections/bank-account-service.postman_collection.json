@@ -1,0 +1,267 @@
+{
+  "info": {
+    "name": "Bank Account Service",
+    "description": "Collection de tests pour le microservice de gestion des comptes bancaires",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8081/api"
+    },
+    {
+      "key": "accountId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Comptes Bancaires",
+      "item": [
+        {
+          "name": "Lister tous les comptes",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Réponse est un tableau', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body).to.be.an('array');",
+                  "});",
+                  "pm.test('Chaque compte a les champs requis', () => {",
+                  "    const accounts = pm.response.json();",
+                  "    if (accounts.length > 0) {",
+                  "        const acc = accounts[0];",
+                  "        pm.expect(acc).to.have.property('id');",
+                  "        pm.expect(acc).to.have.property('balance');",
+                  "        pm.expect(acc).to.have.property('currency');",
+                  "        pm.expect(acc).to.have.property('type');",
+                  "        pm.collectionVariables.set('accountId', acc.id);",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/bankAccounts",
+            "description": "Récupère la liste complète des comptes bancaires"
+          }
+        },
+        {
+          "name": "Créer un compte (CURRENT)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201 Created', () => pm.response.to.have.status(201));",
+                  "pm.test('Compte créé avec ID', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.id).to.be.a('string').and.not.empty;",
+                  "    pm.expect(body.balance).to.eql(75000);",
+                  "    pm.expect(body.currency).to.eql('MAD');",
+                  "    pm.expect(body.type).to.eql('CURRENT_ACCOUNT');",
+                  "    pm.collectionVariables.set('accountId', body.id);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"balance\": 75000,\n  \"currency\": \"MAD\",\n  \"type\": \"CURRENT_ACCOUNT\"\n}"
+            },
+            "url": "{{baseUrl}}/bankAccounts",
+            "description": "Crée un nouveau compte courant"
+          }
+        },
+        {
+          "name": "Créer un compte (SAVING)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201 Created', () => pm.response.to.have.status(201));",
+                  "pm.test('Compte épargne créé', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.type).to.eql('SAVING_ACCOUNT');",
+                  "    pm.expect(body.currency).to.eql('EUR');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"balance\": 30000,\n  \"currency\": \"EUR\",\n  \"type\": \"SAVING_ACCOUNT\"\n}"
+            },
+            "url": "{{baseUrl}}/bankAccounts"
+          }
+        },
+        {
+          "name": "Obtenir un compte par ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('ID correspond', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.id).to.eql(pm.collectionVariables.get('accountId'));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/bankAccounts/{{accountId}}",
+            "description": "Récupère un compte par son identifiant"
+          }
+        },
+        {
+          "name": "Obtenir un compte - ID inexistant (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 500 ou 404 pour compte inexistant', () => {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([404, 500]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/bankAccounts/id-qui-nexiste-pas"
+          }
+        },
+        {
+          "name": "Mettre à jour un compte",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Balance mise à jour', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.balance).to.eql(99000);",
+                  "    pm.expect(body.currency).to.eql('USD');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"balance\": 99000,\n  \"currency\": \"USD\"\n}"
+            },
+            "url": "{{baseUrl}}/bankAccounts/{{accountId}}",
+            "description": "Mise à jour partielle d'un compte"
+          }
+        },
+        {
+          "name": "Supprimer un compte",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 204 No Content', () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/bankAccounts/{{accountId}}",
+            "description": "Supprime un compte par son ID"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Spring Data REST",
+      "item": [
+        {
+          "name": "Lister via Data REST",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Format HAL+JSON', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body).to.have.property('_embedded');",
+                  "    pm.expect(body).to.have.property('_links');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:8081/data-rest/accounts",
+            "description": "Endpoint Spring Data REST avec projection accountSummary"
+          }
+        },
+        {
+          "name": "Projection accountSummary",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Projection retourne les bons champs', () => {",
+                  "    const body = pm.response.json();",
+                  "    const accounts = body._embedded?.accounts || [];",
+                  "    if (accounts.length > 0) {",
+                  "        pm.expect(accounts[0]).to.have.property('id');",
+                  "        pm.expect(accounts[0]).to.have.property('balance');",
+                  "        pm.expect(accounts[0]).to.have.property('currency');",
+                  "        pm.expect(accounts[0]).to.have.property('type');",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8081/data-rest/accounts?projection=accountSummary",
+              "query": [{ "key": "projection", "value": "accountSummary" }]
+            },
+            "description": "Projections Spring Data REST — retourne id, balance, currency, type uniquement"
+          }
+        }
+      ]
+    }
+  ]
+}
